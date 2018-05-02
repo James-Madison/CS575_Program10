@@ -1,0 +1,146 @@
+// Prog10
+// This program takes info from data_records.txt and outputs a formatted EMT file called emt_out.txt
+// Redo Prog8 utilizing 4 functions as follows:
+// header() - Outputs the first 3 lines of your EMT output file
+// amt_conv() - Removes the decimal from your payment value
+// detail_out() Outputs the detail section of your EMT output file (must utilizing the amt_cov() function)
+// footer() - Outputs the last line of your EMT output file
+// Name: James Madison
+// Date: 2018-05-01
+
+#include <iostream>
+#include <fstream>
+#include <iomanip>
+#include <string>
+#include <stdio.h>
+
+using namespace std;
+
+//Prototypes
+void header (ofstream&);
+int amt_conv (int&, double&);
+void detail_out (ofstream&, long long&, long long&, int, string&, string&);
+void footer (ofstream&, int&, long long&, long long&);
+
+int main()
+{
+    // Declare
+    string name, cid;
+    string xheader;
+    ifstream fin;
+    ofstream fout;
+    double pmnt;
+    long long routing, acct;
+    int rate=0;
+    long long routing_sum = 0;
+    long long pmnt_sum = 0;
+    int i = 0; //record count
+    
+    // Open File
+    fin.open("/Users/jamesmadison/Desktop/CS 575/Prog10/data_records.txt");
+    fout.open("emt_out.txt");
+    
+    // Test File
+    if (fin)
+    {
+        cout << "Processing . . . " << endl;
+        cout << endl;
+    }
+    else
+    {
+        cout << "Error: File not found." << endl;
+        cout << endl;
+        system("pause");
+        return 0;
+    }
+    
+    // Remove Header
+    getline(fin, xheader);
+    
+    // Write New Header w/ function "header"
+    header (fout);
+    
+    // Input Data from File
+    while (fin.good())
+    {
+        // Get customer name
+        getline(fin, name, ',');
+        
+        // Get routing number
+        fin >> routing;
+        
+        // Get account number
+        fin.ignore(5, ',');
+        fin >> acct;
+        
+        // Get payment amount
+        fin.ignore(5, '$');
+        fin >> pmnt;
+        
+        // Call function "amt_conv" to get rate (pmnt w/o decimal point
+        amt_conv (rate, pmnt);
+        
+        // Get Customer ID
+        fin.ignore(5, ',');
+        fin >> cid;
+        
+        //record counter
+        i++;
+        
+        fin.ignore();
+        
+        // Call function detail_out() Outputs the detail section of your EMT output file (must utilizing the amt_cov() function) to output routing number & account number, append with prefix 627, left align
+        detail_out (fout, routing, acct, amt_conv(rate, pmnt), cid, name);
+        
+        // Calculate Sum of Routing Numbers
+        routing_sum = routing_sum + routing;
+        
+        // Calculate Sum of Payments (rate)
+        pmnt_sum = pmnt_sum + pmnt;
+    }
+    
+    // Output Footer using "footer" function
+    // [1250][Record Count(6)][Sum of Routing Numbers(16)][Sum of Payments(12)][000000121250]
+    footer (fout, i, routing_sum, pmnt_sum);
+    
+    // Close files
+    fin.close();
+    fout.close();
+    
+    return 0;
+}
+
+// Create function "header()" - Outputs the first 3 lines of your EMT output file
+void header (ofstream& fout)
+{
+    fout << "JOB $$$NAME = 194238456-01" << endl;
+    fout << "101 10272016000019423845601WELLS FARGO Los Angeles" << endl;
+    fout << "1250APLHA CORP000019423845601INSURANCE PAYMENT" << endl;
+    return;
+}
+
+// Create function "amt_conv()" - Removes the decimal from your payment value
+int amt_conv (int& rate, double& pmnt)
+{
+    rate = pmnt * 100;
+    return rate;
+}
+
+// Create function "detail_out()" Outputs the detail section of your EMT output file (must utilizing the amt_cov() function)
+void detail_out (ofstream& fout, long long& routing, long long& acct, int amt_conv (int& rate, double& pmnt), string& cid, string& name)
+{
+    fout << left << "627"
+    << setw(9) << routing
+    << setw(17) << acct
+    << left << "000000" << setfill('0')
+    << setw(4) << &amt_conv
+    << setfill(' ') << setw(16) << cid
+    << name << endl;
+    return;
+}
+
+// Create function "footer()" - Outputs the last line of your EMT output file
+void footer (ofstream& fout, int& i, long long& routing_sum, long long& pmnt_sum)
+{
+ fout << "1250" << right << setfill('0') << setw(6) << i << setw(16) << routing_sum << setw(12) << pmnt_sum << "0000121250" << endl;
+}
