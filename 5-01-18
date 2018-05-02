@@ -19,7 +19,7 @@ using namespace std;
 //Prototypes
 void header (ofstream&);
 int amt_conv (int&, double&);
-void detail_out (ofstream&, long long&, long long&, int, string&, string&);
+void detail_out (ofstream& fout, long long& routing, long long& acct, int amt_conv, string& cid, string& name);
 void footer (ofstream&, int&, long long&, long long&);
 
 int main()
@@ -31,7 +31,7 @@ int main()
     ofstream fout;
     double pmnt;
     long long routing, acct;
-    int rate=0;
+    int rate;
     long long routing_sum = 0;
     long long pmnt_sum = 0;
     int i = 0; //record count
@@ -76,9 +76,6 @@ int main()
         // Get payment amount
         fin.ignore(5, '$');
         fin >> pmnt;
-        
-        // Call function "amt_conv" to get rate (pmnt w/o decimal point
-        amt_conv (rate, pmnt);
         
         // Get Customer ID
         fin.ignore(5, ',');
@@ -127,13 +124,13 @@ int amt_conv (int& rate, double& pmnt)
 }
 
 // Create function "detail_out()" Outputs the detail section of your EMT output file (must utilizing the amt_cov() function)
-void detail_out (ofstream& fout, long long& routing, long long& acct, int amt_conv (int& rate, double& pmnt), string& cid, string& name)
+void detail_out (ofstream& fout, long long& routing, long long& acct, int amt_conv, string& cid, string& name)
 {
     fout << left << "627"
     << setw(9) << routing
     << setw(17) << acct
     << left << "000000" << setfill('0')
-    << setw(4) << &amt_conv
+    << setw(4) << amt_conv
     << setfill(' ') << setw(16) << cid
     << name << endl;
     return;
